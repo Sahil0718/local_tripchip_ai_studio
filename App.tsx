@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppView, TripPreferences, TravelItinerary, SavedTrip } from './types';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -8,9 +8,13 @@ import LoadingState from './components/LoadingState';
 import ItineraryDisplay from './components/ItineraryDisplay';
 import SavedTripsList from './components/SavedTripsList';
 import About from './components/About';
+import Login from './components/Login';
+import Signup from './components/Signup';
 import { generateTripPlan } from './services/geminiService';
+import axios from 'axios';
 
 const STORAGE_KEY = 'tripchip_saved_plans';
+const AUTH_KEY = 'tripchip_auth';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.Home);
@@ -20,18 +24,48 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  // Load saved trips on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setSavedTrips(JSON.parse(stored));
-      } catch (e) {
-        console.error("Failed to load saved trips", e);
-      }
+  const fetchTrips = useCallback(async (authToken: string) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/trips', {
+        headers: { 'x-auth-token': authToken }
+      });
+      // Map MongoDB _id to id for frontend compatibility
+      const trips = response.data.map((trip: any) => ({
+        ...trip,
+        id: trip._id
+      }));
+      setSavedTrips(trips);
+    } catch (err) {
+      console.error("Failed to fetch trips", err);
     }
   }, []);
+
+  // Load saved trips and auth on mount
+  useEffect(() => {
+    const storedAuth = localStorage.getItem(AUTH_KEY);
+    if (storedAuth) {
+      try {
+        const { token, user } = JSON.parse(storedAuth);
+        setToken(token);
+        setUser(user);
+        fetchTrips(token);
+      } catch (e) {
+        console.error("Failed to load auth", e);
+      }
+    } else {
+      const storedTrips = localStorage.getItem(STORAGE_KEY);
+      if (storedTrips) {
+        try {
+          setSavedTrips(JSON.parse(storedTrips));
+        } catch (e) {
+          console.error("Failed to load saved trips", e);
+        }
+      }
+    }
+  }, [fetchTrips]);
 
   // Notification timer
   useEffect(() => {
@@ -40,6 +74,33 @@ const App: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  const handleLogin = (token: string, user: any) => {
+    setToken(token);
+    setUser(user);
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ token, user }));
+    fetchTrips(token);
+    setView(AppView.Home);
+    setNotification(`Welcome back, ${user.username}!`);
+  };
+
+  const handleSignup = (token: string, user: any) => {
+    setToken(token);
+    setUser(user);
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ token, user }));
+    fetchTrips(token);
+    setView(AppView.Home);
+    setNotification(`Account created! Welcome, ${user.username}!`);
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem(AUTH_KEY);
+    setSavedTrips([]); // Clear trips on logout
+    setView(AppView.Home);
+    setNotification("Logged out successfully.");
+  };
 
   const handleStartPlanning = () => {
     setIsSaved(false);
@@ -63,21 +124,48 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSaveTrip = () => {
+  const handleSaveTrip = async () => {
     if (!itinerary || !preferences) return;
     
-    const newSavedTrip: SavedTrip = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      preferences,
-      itinerary
-    };
+    if (token) {
+      try {
+        const response = await axios.post('http://localhost:5000/api/trips', {
+          preferences,
+          itinerary
+        }, {
+          headers: { 'x-auth-token': token }
+        });
+        
+        const newSavedTrip: SavedTrip = {
+          ...response.data,
+          id: response.data._id
+        };
+        
+        setSavedTrips([newSavedTrip, ...savedTrips]);
+        setIsSaved(true);
+        setNotification("Trip saved to your account!");
+      } catch (err: any) {
+        console.error("Failed to save trip to database", err);
+        if (err.response) {
+          console.error("Error response data:", err.response.data);
+          console.error("Error response status:", err.response.status);
+        }
+        setNotification(`Failed to save trip: ${err.response?.data?.message || err.message}`);
+      }
+    } else {
+      const newSavedTrip: SavedTrip = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        preferences,
+        itinerary
+      };
 
-    const updated = [newSavedTrip, ...savedTrips];
-    setSavedTrips(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setIsSaved(true);
-    setNotification("Trip saved to your library!");
+      const updated = [newSavedTrip, ...savedTrips];
+      setSavedTrips(updated);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      setIsSaved(true);
+      setNotification("Trip saved to your library (locally)!");
+    }
   };
 
   const handleViewSavedTrip = (trip: SavedTrip) => {
@@ -87,12 +175,27 @@ const App: React.FC = () => {
     setView(AppView.Result);
   };
 
-  const handleDeleteSavedTrip = (id: string, e: React.MouseEvent) => {
+  const handleDeleteSavedTrip = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = savedTrips.filter(t => t.id !== id);
-    setSavedTrips(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setNotification("Trip removed from library.");
+    
+    if (token) {
+      try {
+        await axios.delete(`http://localhost:5000/api/trips/${id}`, {
+          headers: { 'x-auth-token': token }
+        });
+        const updated = savedTrips.filter(t => t.id !== id);
+        setSavedTrips(updated);
+        setNotification("Trip removed from your account.");
+      } catch (err) {
+        console.error("Failed to delete trip from database", err);
+        setNotification("Failed to delete trip. Please try again.");
+      }
+    } else {
+      const updated = savedTrips.filter(t => t.id !== id);
+      setSavedTrips(updated);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      setNotification("Trip removed from library.");
+    }
   };
 
   const handleReset = () => {
@@ -108,6 +211,10 @@ const App: React.FC = () => {
         onHomeClick={handleReset} 
         onSavedClick={() => setView(AppView.SavedList)} 
         onAboutClick={() => setView(AppView.About)}
+        onLoginClick={() => setView(AppView.Login)}
+        onLogout={handleLogout}
+        isLoggedIn={!!token}
+        username={user?.username}
       />
       
       {/* Custom Notification */}
@@ -143,6 +250,20 @@ const App: React.FC = () => {
               </div>
             )}
           </>
+        )}
+
+        {view === AppView.Login && (
+          <Login 
+            onLogin={handleLogin} 
+            onSwitchToSignup={() => setView(AppView.Signup)} 
+          />
+        )}
+
+        {view === AppView.Signup && (
+          <Signup 
+            onSignup={handleSignup} 
+            onSwitchToLogin={() => setView(AppView.Login)} 
+          />
         )}
 
         {view === AppView.SavedList && (

@@ -50,5 +50,7 @@ export enum AppView {
   Loading = 'LOADING',
   Result = 'RESULT',
   SavedList = 'SAVED_LIST',
-  About = 'ABOUT'
+  About = 'ABOUT',
+  Login = 'LOGIN',
+  Signup = 'SIGNUP'
 }
