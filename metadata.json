@@ -1,0 +1,7 @@
+{
+  "name": "TripChip - AI Travel Planner",
+  "description": "An intelligent travel planning application that creates personalized, detailed itineraries using the latest Gemini AI and Google Search data.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
