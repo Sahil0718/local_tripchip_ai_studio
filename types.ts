@@ -34,6 +34,7 @@ export interface TravelItinerary {
   overview: string;
   highlights: string[];
   totalEstimatedCostNPR: string;
+  practicalityNote?: string;
   permitsAndLogistics: string[];
   itinerary: ItineraryDay[];
   accommodations: Accommodation[];

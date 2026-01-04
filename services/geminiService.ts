@@ -31,12 +31,16 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
        - Moderate: Rs. 6,000 - Rs. 12,000 per person/day
        - Luxury: Rs. 20,000+ per person/day
     7. Provide a "totalEstimatedCostNPR" (e.g., "Rs. 45,000"). This MUST be the calculated sum of all daily costs, total accommodation costs for the duration, and all permits/logistics. DO NOT leave this empty.
+    8. PRACTICALITY CHECK: Evaluate if the requested duration (${prefs.duration}) is realistic for the journey from ${prefs.origin} to ${prefs.destination}. 
+       - If the duration is too short (e.g., trying to do Everest Base Camp in 3 days), you MUST provide a "practicalityNote" explaining why and suggesting the ideal duration.
+       - You may increase the number of days in the "itinerary" array if it's physically impossible to complete the trip in the requested time.
 
     You MUST respond ONLY with a valid JSON object following this structure:
     {
       "overview": "string",
       "highlights": ["string"],
       "totalEstimatedCostNPR": "string",
+      "practicalityNote": "string (optional, only if duration is impractical)",
       "permitsAndLogistics": ["string"],
       "itinerary": [
         {

@@ -58,7 +58,21 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, preferen
           </div>
         </div>
         
-        <p className="text-lg text-slate-700 leading-relaxed mb-10 border-l-4 border-indigo-500 pl-6 py-2 italic font-medium">{itinerary.overview}</p>
+        <p className="text-lg text-slate-700 leading-relaxed mb-6 border-l-4 border-indigo-500 pl-6 py-2 italic font-medium">{itinerary.overview}</p>
+        
+        {itinerary.practicalityNote && (
+          <div className="mb-10 p-6 bg-amber-50 border-2 border-amber-100 rounded-2xl flex items-start gap-4">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0 text-amber-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-amber-800 font-black text-sm uppercase tracking-widest mb-1">Expert Practicality Note</h4>
+              <p className="text-amber-700 font-bold leading-relaxed">{itinerary.practicalityNote}</p>
+            </div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <div>
