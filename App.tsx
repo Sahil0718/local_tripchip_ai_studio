@@ -104,6 +104,11 @@ const App: React.FC = () => {
   };
 
   const handleStartPlanning = () => {
+    if (!token) {
+      setView(AppView.Login);
+      setNotification("Please login to start planning your trip.");
+      return;
+    }
     setPreferences(null);
     setItinerary(null);
     setIsSaved(false);
@@ -212,7 +217,14 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-slate-50 relative">
       <Header 
         onHomeClick={handleReset} 
-        onSavedClick={() => setView(AppView.SavedList)} 
+        onSavedClick={() => {
+          if (!token) {
+            setView(AppView.Login);
+            setNotification("Please login to view your saved trips.");
+          } else {
+            setView(AppView.SavedList);
+          }
+        }} 
         onAboutClick={() => setView(AppView.About)}
         onLoginClick={() => setView(AppView.Login)}
         onNewTripClick={handleStartPlanning}
