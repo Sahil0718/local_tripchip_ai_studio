@@ -52,6 +52,10 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, preferen
               From <span className="text-indigo-600">{preferences?.origin || 'your location'}</span> to <span className="text-indigo-600">{preferences?.destination || 'Nepal'}</span>
             </p>
           </div>
+          <div className="bg-indigo-50 border-2 border-indigo-100 rounded-3xl p-6 text-center min-w-[200px]">
+            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Total Estimated Budget</p>
+            <p className="text-3xl font-black text-indigo-700">{itinerary.totalEstimatedCostNPR || 'N/A'}</p>
+          </div>
         </div>
         
         <p className="text-lg text-slate-700 leading-relaxed mb-10 border-l-4 border-indigo-500 pl-6 py-2 italic font-medium">{itinerary.overview}</p>
@@ -121,6 +125,10 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, preferen
             <div className="bg-white rounded-[2rem] p-10 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <h3 className="text-2xl font-black text-slate-900">{day.title}</h3>
+                <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Daily Est. Cost</span>
+                  <span className="text-lg font-black text-slate-700">{day.estimatedCostNPR || 'N/A'}</span>
+                </div>
               </div>
 
               <div className="space-y-10">

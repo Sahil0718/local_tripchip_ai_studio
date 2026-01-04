@@ -24,18 +24,25 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
     1. ALL currency mentions must be in Nepali Rupees (NPR). Use "Rs." prefix.
     2. Include essential logistical info: Required permits (especially for restricted areas like Upper Mustang), entry requirements, and the best seasons.
     3. Provide a logical daily flow (Day 1, Day 2, etc.) with specific activities.
-    4. Provide exactly 3 structured accommodation recommendations that fit the specified budget.
+    4. Provide exactly 3 structured accommodation recommendations that fit the specified budget level (${prefs.budget}).
     5. Be specific about transport options (flights, private jeeps, trekking routes) from ${prefs.origin} to ${prefs.destination} and within the destination.
+    6. For each day, provide an "estimatedCostNPR" (e.g., "Rs. 5,000"). This should be relevant to the "${prefs.budget}" budget level:
+       - Budget: Rs. 2,500 - Rs. 4,500 per person/day
+       - Moderate: Rs. 6,000 - Rs. 12,000 per person/day
+       - Luxury: Rs. 20,000+ per person/day
+    7. Provide a "totalEstimatedCostNPR" (e.g., "Rs. 45,000"). This MUST be the calculated sum of all daily costs, total accommodation costs for the duration, and all permits/logistics. DO NOT leave this empty.
 
     You MUST respond ONLY with a valid JSON object following this structure:
     {
       "overview": "string",
       "highlights": ["string"],
+      "totalEstimatedCostNPR": "string",
       "permitsAndLogistics": ["string"],
       "itinerary": [
         {
           "day": number,
           "title": "string",
+          "estimatedCostNPR": "string",
           "activities": [
             {
               "time": "string",

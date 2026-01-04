@@ -46,7 +46,7 @@ const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete
                 {trip.preferences.origin} → {trip.preferences.destination}
               </h3>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
-                {trip.preferences.duration} • {trip.preferences.budget}
+                {trip.preferences.duration} • {trip.preferences.budget} {trip.itinerary.totalEstimatedCostNPR ? `• ${trip.itinerary.totalEstimatedCostNPR}` : ''}
               </p>
             </div>
             

@@ -21,6 +21,7 @@ export interface Accommodation {
 export interface ItineraryDay {
   day: number;
   title: string;
+  estimatedCostNPR: string;
   activities: {
     time: string;
     description: string;
@@ -32,6 +33,7 @@ export interface ItineraryDay {
 export interface TravelItinerary {
   overview: string;
   highlights: string[];
+  totalEstimatedCostNPR: string;
   permitsAndLogistics: string[];
   itinerary: ItineraryDay[];
   accommodations: Accommodation[];
