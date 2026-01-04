@@ -15,6 +15,7 @@ const INTEREST_OPTIONS = [
 
 const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData }) => {
   const [prefs, setPrefs] = useState<TripPreferences>(initialData || {
+    origin: '',
     destination: '',
     duration: '5 days',
     budget: 'moderate',
@@ -57,17 +58,30 @@ const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData }) => {
 
       <form onSubmit={handleSubmit} className="p-10 space-y-10 bg-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Destination */}
-          <div className="col-span-full">
-            <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Target Destination</label>
-            <input
-              type="text"
-              required
-              className={`${inputClasses} text-2xl border-slate-300`}
-              placeholder="e.g. Upper Mustang, Nepal"
-              value={prefs.destination}
-              onChange={e => setPrefs({ ...prefs, destination: e.target.value })}
-            />
+          {/* Origin & Destination */}
+          <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Starting From</label>
+              <input
+                type="text"
+                required
+                className={`${inputClasses} border-slate-300`}
+                placeholder="e.g. Kathmandu, Nepal"
+                value={prefs.origin}
+                onChange={e => setPrefs({ ...prefs, origin: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Target Destination</label>
+              <input
+                type="text"
+                required
+                className={`${inputClasses} border-slate-300`}
+                placeholder="e.g. Upper Mustang, Nepal"
+                value={prefs.destination}
+                onChange={e => setPrefs({ ...prefs, destination: e.target.value })}
+              />
+            </div>
           </div>
 
           {/* Duration */}

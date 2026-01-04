@@ -6,6 +6,7 @@ interface HeaderProps {
   onSavedClick: () => void;
   onAboutClick: () => void;
   onLoginClick: () => void;
+  onNewTripClick: () => void;
   onLogout: () => void;
   isLoggedIn: boolean;
   username?: string;
@@ -16,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({
   onSavedClick, 
   onAboutClick, 
   onLoginClick, 
+  onNewTripClick,
   onLogout, 
   isLoggedIn, 
   username 
@@ -59,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({
             </button>
           )}
           <button 
-            onClick={onHomeClick}
+            onClick={onNewTripClick}
             className="hidden sm:block px-5 py-2 text-xs font-black text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 uppercase tracking-widest"
           >
             New Trip

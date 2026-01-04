@@ -8,9 +8,11 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   
   const prompt = `
-    Act as a world-class travel planning expert. Create a highly detailed travel itinerary for a trip to: ${prefs.destination}.
+    Act as a world-class travel planning expert. Create a highly detailed travel itinerary for a trip starting from ${prefs.origin} and going to ${prefs.destination}.
     
     User Preferences:
+    - Origin: ${prefs.origin}
+    - Destination: ${prefs.destination}
     - Duration: ${prefs.duration}
     - Budget Level: ${prefs.budget}
     - Group Size: ${prefs.groupSize}
@@ -23,7 +25,7 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
     2. Include essential logistical info: Required permits (especially for restricted areas like Upper Mustang), entry requirements, and the best seasons.
     3. Provide a logical daily flow (Day 1, Day 2, etc.) with specific activities.
     4. Provide exactly 3 structured accommodation recommendations that fit the specified budget.
-    5. Be specific about transport options (flights, private jeeps, trekking routes).
+    5. Be specific about transport options (flights, private jeeps, trekking routes) from ${prefs.origin} to ${prefs.destination} and within the destination.
 
     You MUST respond ONLY with a valid JSON object following this structure:
     {

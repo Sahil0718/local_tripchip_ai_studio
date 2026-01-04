@@ -10,6 +10,7 @@ import SavedTripsList from './components/SavedTripsList';
 import About from './components/About';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import CollaboratedHotels from './components/CollaboratedHotels';
 import { generateTripPlan } from './services/geminiService';
 import axios from 'axios';
 
@@ -103,6 +104,8 @@ const App: React.FC = () => {
   };
 
   const handleStartPlanning = () => {
+    setPreferences(null);
+    setItinerary(null);
     setIsSaved(false);
     setView(AppView.Form);
   };
@@ -212,6 +215,7 @@ const App: React.FC = () => {
         onSavedClick={() => setView(AppView.SavedList)} 
         onAboutClick={() => setView(AppView.About)}
         onLoginClick={() => setView(AppView.Login)}
+        onNewTripClick={handleStartPlanning}
         onLogout={handleLogout}
         isLoggedIn={!!token}
         username={user?.username}
@@ -231,6 +235,7 @@ const App: React.FC = () => {
         {view === AppView.Home && (
           <>
             <Hero onStart={handleStartPlanning} />
+            <CollaboratedHotels />
             {savedTrips.length > 0 && (
               <div className="container mx-auto px-4 py-12">
                 <div className="flex justify-between items-end mb-8">

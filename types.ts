@@ -1,5 +1,6 @@
 
 export interface TripPreferences {
+  origin: string;
   destination: string;
   duration: string;
   budget: 'budget' | 'moderate' | 'luxury';

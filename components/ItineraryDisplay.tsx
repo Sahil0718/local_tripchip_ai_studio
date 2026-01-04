@@ -48,7 +48,9 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary, preferen
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
             <h1 className="text-5xl font-black text-slate-900 mb-4 tracking-tight">Your Adventure Plan</h1>
-            <p className="text-xl text-slate-500 font-medium">Curated for your specific tastes in {preferences?.destination || 'Nepal'}</p>
+            <p className="text-xl text-slate-500 font-medium">
+              From <span className="text-indigo-600">{preferences?.origin || 'your location'}</span> to <span className="text-indigo-600">{preferences?.destination || 'Nepal'}</span>
+            </p>
           </div>
         </div>
         

@@ -42,7 +42,9 @@ const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete
 
           <div className="p-6 flex-grow flex flex-col">
             <div className="mb-4">
-              <h3 className="text-xl font-black text-slate-900 line-clamp-1">{trip.preferences.destination}</h3>
+              <h3 className="text-xl font-black text-slate-900 line-clamp-1">
+                {trip.preferences.origin} → {trip.preferences.destination}
+              </h3>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
                 {trip.preferences.duration} • {trip.preferences.budget}
               </p>
