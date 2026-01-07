@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Snowfall from 'react-snowfall';
 
 interface HeroProps {
   onStart: () => void;
@@ -8,6 +9,7 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ onStart }) => {
   return (
     <div className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-32">
+      <Snowfall color="#82C3D9" />
       <div className="container mx-auto px-4">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
           <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">

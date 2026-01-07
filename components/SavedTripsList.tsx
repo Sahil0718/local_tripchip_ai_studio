@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SavedTrip } from '../types';
+import Snowfall from 'react-snowfall';
 
 interface SavedTripsListProps {
   trips: SavedTrip[];
@@ -11,6 +12,7 @@ interface SavedTripsListProps {
 const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+       <Snowfall color="#82C3D9" />
       {trips.map((trip) => (
         <div 
           key={trip.id}

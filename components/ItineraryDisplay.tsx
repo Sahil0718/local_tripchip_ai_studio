@@ -2,6 +2,7 @@
 import React from 'react';
 import { TravelItinerary, TripPreferences } from '../types';
 
+
 interface ItineraryDisplayProps {
   itinerary: TravelItinerary;
   preferences: TripPreferences | null;

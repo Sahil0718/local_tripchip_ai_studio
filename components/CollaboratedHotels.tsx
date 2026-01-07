@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Snowfall from 'react-snowfall';
 
 interface Hotel {
   id: string;
@@ -62,6 +63,7 @@ const CollaboratedHotels: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <Snowfall color="#82C3D9" />
           {HOTELS.map((hotel) => (
             <div key={hotel.id} className="group bg-white rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
               <div className="relative h-48 overflow-hidden">

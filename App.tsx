@@ -13,6 +13,7 @@ import Signup from './components/Signup';
 import CollaboratedHotels from './components/CollaboratedHotels';
 import { generateTripPlan } from './services/geminiService';
 import axios from 'axios';
+import Snowfall from 'react-snowfall';
 
 const STORAGE_KEY = 'tripchip_saved_plans';
 const AUTH_KEY = 'tripchip_auth';
@@ -134,7 +135,7 @@ const App: React.FC = () => {
 
   const handleSaveTrip = async () => {
     if (!itinerary || !preferences) return;
-    
+
     if (token) {
       try {
         const response = await axios.post('http://localhost:5000/api/trips', {
@@ -143,12 +144,12 @@ const App: React.FC = () => {
         }, {
           headers: { 'x-auth-token': token }
         });
-        
+
         const newSavedTrip: SavedTrip = {
           ...response.data,
           id: response.data._id
         };
-        
+
         setSavedTrips([newSavedTrip, ...savedTrips]);
         setIsSaved(true);
         setNotification("Trip saved to your account!");
@@ -185,7 +186,7 @@ const App: React.FC = () => {
 
   const handleDeleteSavedTrip = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (token) {
       try {
         await axios.delete(`http://localhost:5000/api/trips/${id}`, {
@@ -215,8 +216,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 relative">
-      <Header 
-        onHomeClick={handleReset} 
+      <Header
+        onHomeClick={handleReset}
         onSavedClick={() => {
           if (!token) {
             setView(AppView.Login);
@@ -224,7 +225,7 @@ const App: React.FC = () => {
           } else {
             setView(AppView.SavedList);
           }
-        }} 
+        }}
         onAboutClick={() => setView(AppView.About)}
         onLoginClick={() => setView(AppView.Login)}
         onNewTripClick={handleStartPlanning}
@@ -232,7 +233,7 @@ const App: React.FC = () => {
         isLoggedIn={!!token}
         username={user?.username}
       />
-      
+
       {/* Custom Notification */}
       {notification && (
         <div className="fixed top-20 right-4 z-[100] animate-bounce">
@@ -250,18 +251,19 @@ const App: React.FC = () => {
             <CollaboratedHotels />
             {savedTrips.length > 0 && (
               <div className="container mx-auto px-4 py-12">
+
                 <div className="flex justify-between items-end mb-8">
                   <h2 className="text-3xl font-black text-slate-900">Your Saved Adventures</h2>
-                  <button 
+                  <button
                     onClick={() => setView(AppView.SavedList)}
                     className="text-indigo-600 font-bold hover:underline"
                   >
                     View All
                   </button>
                 </div>
-                <SavedTripsList 
-                  trips={savedTrips.slice(0, 3)} 
-                  onView={handleViewSavedTrip} 
+                <SavedTripsList
+                  trips={savedTrips.slice(0, 3)}
+                  onView={handleViewSavedTrip}
                   onDelete={handleDeleteSavedTrip}
                 />
               </div>
@@ -270,16 +272,16 @@ const App: React.FC = () => {
         )}
 
         {view === AppView.Login && (
-          <Login 
-            onLogin={handleLogin} 
-            onSwitchToSignup={() => setView(AppView.Signup)} 
+          <Login
+            onLogin={handleLogin}
+            onSwitchToSignup={() => setView(AppView.Signup)}
           />
         )}
 
         {view === AppView.Signup && (
-          <Signup 
-            onSignup={handleSignup} 
-            onSwitchToLogin={() => setView(AppView.Login)} 
+          <Signup
+            onSignup={handleSignup}
+            onSwitchToLogin={() => setView(AppView.Login)}
           />
         )}
 
@@ -287,14 +289,14 @@ const App: React.FC = () => {
           <div className="container mx-auto px-4 py-12">
             <div className="flex items-center gap-4 mb-12">
               <button onClick={() => setView(AppView.Home)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
               </button>
               <h2 className="text-4xl font-black text-slate-900">Saved Library</h2>
             </div>
             {savedTrips.length > 0 ? (
-              <SavedTripsList 
-                trips={savedTrips} 
-                onView={handleViewSavedTrip} 
+              <SavedTripsList
+                trips={savedTrips}
+                onView={handleViewSavedTrip}
                 onDelete={handleDeleteSavedTrip}
               />
             ) : (
@@ -326,10 +328,10 @@ const App: React.FC = () => {
         )}
 
         {view === AppView.Result && itinerary && (
-          <ItineraryDisplay 
+          <ItineraryDisplay
             itinerary={itinerary}
             preferences={preferences}
-            onBack={() => setView(AppView.Form)} 
+            onBack={() => setView(AppView.Form)}
             onSave={handleSaveTrip}
             isSaved={isSaved}
           />
@@ -338,9 +340,9 @@ const App: React.FC = () => {
 
       <footer className="bg-white border-t border-slate-200 py-12">
         <div className="container mx-auto px-4 text-center">
-          <div className="font-bold text-xl mb-4" onClick={handleReset} style={{cursor: 'pointer'}}>Trip<span className="text-indigo-600">Chip</span></div>
+          <div className="font-bold text-xl mb-4" onClick={handleReset} style={{ cursor: 'pointer' }}>Trip<span className="text-indigo-600">Chip</span></div>
           <p className="text-slate-500 text-sm max-w-md mx-auto mb-8">
-           AI travel planner, specifically tuned for adventures in the Himalayas and beyond.
+            AI travel planner, specifically tuned for adventures in the Himalayas and beyond.
           </p>
           <div className="flex justify-center gap-6 mb-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
             <button onClick={() => setView(AppView.About)} className="hover:text-indigo-600 transition-colors">About Us</button>
