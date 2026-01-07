@@ -6,6 +6,7 @@ import VoiceInput from './VoiceInput';
 interface PlannerFormProps {
   onSubmit: (prefs: TripPreferences) => void;
   initialData: TripPreferences | null;
+  isEditing?: boolean;
 }
 
 const INTEREST_OPTIONS = [
@@ -13,7 +14,7 @@ const INTEREST_OPTIONS = [
   'Food & Dining', 'Photography', 'Nightlife', 'Relaxation', 'Shopping'
 ];
 
-const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData }) => {
+const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData, isEditing }) => {
   const [prefs, setPrefs] = useState<TripPreferences>(initialData || {
     origin: '',
     destination: '',
@@ -23,7 +24,8 @@ const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData }) => {
     interests: [],
     travelStyle: 'Balanced',
     otherDetails: '',
-    emergencyContact: ''
+    emergencyContact: '',
+    refinementPrompt: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -195,12 +197,27 @@ const PlannerForm: React.FC<PlannerFormProps> = ({ onSubmit, initialData }) => {
           />
         </div>
 
+        {isEditing && (
+          <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <label className="block text-xs font-black text-indigo-600 uppercase tracking-[0.2em] mb-3">
+              What would you like to change? (Refinement Prompt)
+            </label>
+            <textarea
+              className={`${inputClasses} h-32 border-indigo-200 bg-indigo-50/30 resize-none leading-relaxed text-lg focus:ring-indigo-200 focus:border-indigo-600`}
+              placeholder="e.g. 'Add more hiking', 'Make it more kid-friendly', 'Change to a tighter budget'..."
+              value={prefs.refinementPrompt}
+              onChange={e => setPrefs({ ...prefs, refinementPrompt: e.target.value })}
+            />
+            <p className="mt-2 text-xs text-slate-400 font-medium">Use this to tell AI how to modify your existing itinerary.</p>
+          </div>
+        )}
+
         <div className="pt-6">
           <button
             type="submit"
             className="w-full py-6 bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-black rounded-[2rem] shadow-2xl shadow-indigo-200 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
           >
-            <span>Generate Itinerary</span>
+            <span>{isEditing ? 'Update Itinerary' : 'Generate Itinerary'}</span>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </button>
           <p className="text-center text-slate-400 text-xs font-bold uppercase tracking-widest mt-6">Takes about 15-30 seconds</p>

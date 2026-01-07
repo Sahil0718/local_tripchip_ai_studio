@@ -9,6 +9,7 @@ export interface TripPreferences {
   travelStyle: string;
   otherDetails: string;
   emergencyContact: string;
+  refinementPrompt?: string;
 }
 
 export interface Accommodation {

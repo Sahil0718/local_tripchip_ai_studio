@@ -19,10 +19,12 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
     - Interests: ${prefs.interests.join(', ')}
     - Travel Style: ${prefs.travelStyle}
     - Additional Details: ${prefs.otherDetails}
+    ${prefs.refinementPrompt ? `- REFINEMENT REQUEST: ${prefs.refinementPrompt}` : ''}
 
     CRITICAL INSTRUCTIONS:
     1. ALL currency mentions must be in Nepali Rupees (NPR). Use "Rs." prefix.
-    2. Include essential logistical info: Required permits (especially for restricted areas like Upper Mustang), entry requirements, and the best seasons.
+    ${prefs.refinementPrompt ? `2. THE USER IS UPDATING AN EXISTING TRIP. Focus heavily on these changes: ${prefs.refinementPrompt}. Modify the previous structure to incorporate this feedback while maintaining consistency.` : ''}
+    3. Include essential logistical info: Required permits (especially for restricted areas like Upper Mustang), entry requirements, and the best seasons.
     3. Provide a logical daily flow (Day 1, Day 2, etc.) with specific activities.
     4. Provide exactly 3 structured accommodation recommendations that fit the specified budget level (${prefs.budget}).
     5. Be specific about transport options (flights, private jeeps, trekking routes) from ${prefs.origin} to ${prefs.destination} and within the destination.
@@ -102,6 +104,68 @@ export const generateTripPlan = async (prefs: TripPreferences): Promise<TravelIt
     return parsed;
   } catch (error) {
     console.error("Gemini API Error:", error);
+    throw error;
+  }
+};
+
+export const refineDayPlan = async (
+  itinerary: TravelItinerary,
+  dayNumber: number,
+  refinementPrompt: string,
+  prefs: TripPreferences
+): Promise<ItineraryDay> => {
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const dayToRefine = itinerary.itinerary.find(d => d.day === dayNumber);
+  
+  const prompt = `
+    Act as a world-class travel planning expert. You are refining specifically DAY ${dayNumber} of an existing trip.
+    
+    Overall Trip Context:
+    - Destination: ${prefs.destination}
+    - Budget Level: ${prefs.budget}
+    - Interests: ${prefs.interests.join(', ')}
+
+    Current Day ${dayNumber} Details:
+    ${JSON.stringify(dayToRefine, null, 2)}
+
+    USER REQUEST FOR REFINEMENT:
+    "${refinementPrompt}"
+
+    INSTRUCTIONS:
+    1. Update the activities for Day ${dayNumber} based on the user request.
+    2. Maintain consistency with the previous day and the day after (if applicable).
+    3. Keep all currency in Nepali Rupees (NPR) with "Rs." prefix.
+    4. Ensure estimated costs fit the "${prefs.budget}" budget level.
+    
+    You MUST respond ONLY with a valid JSON object matching this structure:
+    {
+      "day": ${dayNumber},
+      "title": "string",
+      "estimatedCostNPR": "string",
+      "activities": [
+        {
+          "time": "string",
+          "description": "string",
+          "location": "string",
+          "type": "sightseeing" | "dining" | "activity" | "travel"
+        }
+      ]
+    }
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: { tools: [{ googleSearch: {} }] }
+    });
+
+    const text = response.text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const cleanJson = jsonMatch ? jsonMatch[0] : text;
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("Gemini Day Refinement Error:", error);
     throw error;
   }
 };

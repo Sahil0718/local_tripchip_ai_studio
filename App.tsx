@@ -11,7 +11,7 @@ import About from './components/About';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import CollaboratedHotels from './components/CollaboratedHotels';
-import { generateTripPlan } from './services/geminiService';
+import { generateTripPlan, refineDayPlan } from './services/geminiService';
 import axios from 'axios';
 import Snowfall from 'react-snowfall';
 
@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [editingTripId, setEditingTripId] = useState<string | null>(null);
 
   const fetchTrips = useCallback(async (authToken: string) => {
     try {
@@ -113,6 +114,7 @@ const App: React.FC = () => {
     setPreferences(null);
     setItinerary(null);
     setIsSaved(false);
+    setEditingTripId(null);
     setView(AppView.Form);
   };
 
@@ -138,42 +140,68 @@ const App: React.FC = () => {
 
     if (token) {
       try {
-        const response = await axios.post('http://localhost:5000/api/trips', {
-          preferences,
-          itinerary
-        }, {
-          headers: { 'x-auth-token': token }
-        });
+        let response;
+        if (editingTripId) {
+          response = await axios.put(`http://localhost:5000/api/trips/${editingTripId}`, {
+            preferences,
+            itinerary
+          }, {
+            headers: { 'x-auth-token': token }
+          });
+          
+          const updatedTrip: SavedTrip = {
+            ...response.data,
+            id: response.data._id
+          };
+          setSavedTrips(savedTrips.map(t => t.id === editingTripId ? updatedTrip : t));
+          setNotification("Trip updated successfully!");
+        } else {
+          response = await axios.post('http://localhost:5000/api/trips', {
+            preferences,
+            itinerary
+          }, {
+            headers: { 'x-auth-token': token }
+          });
 
-        const newSavedTrip: SavedTrip = {
-          ...response.data,
-          id: response.data._id
-        };
+          const newSavedTrip: SavedTrip = {
+            ...response.data,
+            id: response.data._id
+          };
 
-        setSavedTrips([newSavedTrip, ...savedTrips]);
-        setIsSaved(true);
-        setNotification("Trip saved to your account!");
-      } catch (err: any) {
-        console.error("Failed to save trip to database", err);
-        if (err.response) {
-          console.error("Error response data:", err.response.data);
-          console.error("Error response status:", err.response.status);
+          setSavedTrips([newSavedTrip, ...savedTrips]);
+          setNotification("Trip saved to your account!");
         }
+        setIsSaved(true);
+      } catch (err: any) {
+        console.error("Failed to save/update trip in database", err);
         setNotification(`Failed to save trip: ${err.response?.data?.message || err.message}`);
       }
     } else {
-      const newSavedTrip: SavedTrip = {
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        preferences,
-        itinerary
-      };
+      if (editingTripId) {
+        const updatedTrip: SavedTrip = {
+          id: editingTripId,
+          createdAt: new Date().toISOString(), // Or keep old one if we had it
+          preferences,
+          itinerary
+        };
+        const updated = savedTrips.map(t => t.id === editingTripId ? updatedTrip : t);
+        setSavedTrips(updated);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        setNotification("Trip updated (locally)!");
+      } else {
+        const newSavedTrip: SavedTrip = {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          preferences,
+          itinerary
+        };
 
-      const updated = [newSavedTrip, ...savedTrips];
-      setSavedTrips(updated);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        const updated = [newSavedTrip, ...savedTrips];
+        setSavedTrips(updated);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        setNotification("Trip saved to your library (locally)!");
+      }
       setIsSaved(true);
-      setNotification("Trip saved to your library (locally)!");
     }
   };
 
@@ -181,7 +209,17 @@ const App: React.FC = () => {
     setPreferences(trip.preferences);
     setItinerary(trip.itinerary);
     setIsSaved(true); // Since it's already in the library
+    setEditingTripId(trip.id);
     setView(AppView.Result);
+  };
+
+  const handleEditSavedTrip = (trip: SavedTrip, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreferences(trip.preferences);
+    setItinerary(null);
+    setIsSaved(false);
+    setEditingTripId(trip.id);
+    setView(AppView.Form);
   };
 
   const handleDeleteSavedTrip = async (id: string, e: React.MouseEvent) => {
@@ -211,7 +249,31 @@ const App: React.FC = () => {
     setPreferences(null);
     setItinerary(null);
     setIsSaved(false);
+    setEditingTripId(null);
     setView(AppView.Home);
+  };
+
+  const handleUpdateItinerary = (updatedItinerary: TravelItinerary) => {
+    setItinerary(updatedItinerary);
+    setIsSaved(false); // Mark as unsaved so user knows to save changes
+  };
+
+  const handleRefineDay = async (dayNumber: number, prompt: string) => {
+    if (!itinerary || !preferences) return;
+
+    try {
+      const updatedDay = await refineDayPlan(itinerary, dayNumber, prompt, preferences);
+      const updatedItinerary = {
+        ...itinerary,
+        itinerary: itinerary.itinerary.map(d => d.day === dayNumber ? updatedDay : d)
+      };
+      setItinerary(updatedItinerary);
+      setIsSaved(false);
+      setNotification(`Day ${dayNumber} updated!`);
+    } catch (err) {
+      console.error("Failed to refine day", err);
+      setNotification("Failed to refine day. Please try again.");
+    }
   };
 
   return (
@@ -265,6 +327,7 @@ const App: React.FC = () => {
                   trips={savedTrips.slice(0, 3)}
                   onView={handleViewSavedTrip}
                   onDelete={handleDeleteSavedTrip}
+                  onEdit={handleEditSavedTrip}
                 />
               </div>
             )}
@@ -298,6 +361,7 @@ const App: React.FC = () => {
                 trips={savedTrips}
                 onView={handleViewSavedTrip}
                 onDelete={handleDeleteSavedTrip}
+                onEdit={handleEditSavedTrip}
               />
             ) : (
               <div className="text-center py-20 bg-white rounded-3xl border border-slate-200">
@@ -314,7 +378,11 @@ const App: React.FC = () => {
 
         {view === AppView.Form && (
           <div className="container mx-auto px-4 py-8">
-            <PlannerForm onSubmit={handleSubmitPreferences} initialData={preferences} />
+            <PlannerForm 
+              onSubmit={handleSubmitPreferences} 
+              initialData={preferences} 
+              isEditing={!!editingTripId}
+            />
             {error && (
               <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg max-w-4xl mx-auto">
                 {error}
@@ -333,6 +401,8 @@ const App: React.FC = () => {
             preferences={preferences}
             onBack={() => setView(AppView.Form)}
             onSave={handleSaveTrip}
+            onUpdateItinerary={handleUpdateItinerary}
+            onRefineDay={handleRefineDay}
             isSaved={isSaved}
           />
         )}

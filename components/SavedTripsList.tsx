@@ -7,9 +7,10 @@ interface SavedTripsListProps {
   trips: SavedTrip[];
   onView: (trip: SavedTrip) => void;
   onDelete: (id: string, e: React.MouseEvent) => void;
+  onEdit: (trip: SavedTrip, e: React.MouseEvent) => void;
 }
 
-const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete }) => {
+const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete, onEdit }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
        <Snowfall color="#82C3D9" />
@@ -19,7 +20,16 @@ const SavedTripsList: React.FC<SavedTripsListProps> = ({ trips, onView, onDelete
           onClick={() => onView(trip)}
           className="group relative bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all cursor-pointer overflow-hidden flex flex-col h-full"
         >
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <button 
+              onClick={(e) => onEdit(trip, e)}
+              className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-400 hover:text-indigo-600 shadow-sm transition-colors border border-slate-100"
+              title="Edit trip"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
             <button 
               onClick={(e) => onDelete(trip.id, e)}
               className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-400 hover:text-red-600 shadow-sm transition-colors border border-slate-100"
