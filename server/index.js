@@ -2,10 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+// Load environment variables before requiring routes
+dotenv.config();
+
 const authRoutes = require('./routes/auth');
 const tripRoutes = require('./routes/trips');
-
-dotenv.config();
 
 const app = express();
 
